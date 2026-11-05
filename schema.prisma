@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("ADMIN") // ADMIN only for simplified version
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  name        String
+  tagline     String?
+  description String?  @db.Text
+  category    String?
+  startDate   DateTime
+  endDate     DateTime
+  venue       String?
+  address     String?
+  organizer   String?
+  contactEmail String?
+  contactPhone String?
+  logoUrl     String?
+  bannerUrl   String?
+  primaryColor String  @default("#0ea5e9")
+  secondaryColor String @default("#f59e0b")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  registrations Registration[]
+}
+
+model Registration {
+  id            String   @id @default(cuid())
+  fullName      String
+  email         String
+  phone         String?
+  organization  String?
+  designation   String?
+  city          String?
+  ticketType    String   @default("General")
+  status        String   @default("CONFIRMED") // CONFIRMED, CANCELLED, CHECKED_IN
+  ticketNumber  String   @unique
+  qrToken       String   @unique
+  checkedInAt   DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  eventId       String
+  event         Event    @relation(fields: [eventId], references: [id])
+
+  @@index([email])
+  @@index([ticketNumber])
+  @@index([qrToken])
+  @@index([status])
+}
